@@ -10,11 +10,27 @@ namespace UbEcommerce.API.Controllers
     {
         private readonly ICategoryRepository _repository;
 
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody]CreateCategoryRequest request)
+        public CategoriaController(ICategoryRepository repository)
         {
+            _repository = repository;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateCategoryRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var response = await _repository.Create(request);
-            return Ok(response);
+
+            if (response == null)
+            {
+                return StatusCode(500, "Não foi possível realizar a requisição.");
+            }
+
+            return CreatedAtAction(nameof(GetById), response);
         }
 
         [HttpGet("{categoryid}")]
@@ -22,6 +38,11 @@ namespace UbEcommerce.API.Controllers
         {
             var request = new GetCategoryByIdRequest { CategoryId = categoryid };
             var response = await _repository.GetCategoryById(request);
+
+            if (response == null)
+            {
+                return NotFound();
+            }
 
             return Ok(response);
         }
@@ -32,16 +53,31 @@ namespace UbEcommerce.API.Controllers
             var request = new DeleteCategoryRequest { CategoryId = categoryid };
             var response = await _repository.Delete(request);
 
-            return Ok(response);
+            if (response == null)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
         }
 
         [HttpPut("{categoryid}")]
         public async Task<IActionResult> Delete([FromRoute] Guid categoryid, [FromBody] UpdateCategoryRequest request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             request.CategoryId = categoryid;
             var response = await _repository.Update(request);
 
-            return Ok(response);
+            if (response == null)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
         }
     }
 }
