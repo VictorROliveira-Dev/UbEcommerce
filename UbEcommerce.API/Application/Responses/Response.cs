@@ -6,7 +6,7 @@
         public string Message { get; set; } = string.Empty;
         public T Data { get; set; }
 
-        public Response(T data, int code = 200, string message = null)
+        public Response(T data, int code = 200, string? message = null)
         {
             _code = code;
             Message = message;
